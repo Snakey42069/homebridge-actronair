@@ -1,5 +1,5 @@
 import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
-const got = import('got');
+const request = require('request');
 import { ExampleHomebridgePlatform } from './platform';
 
 /**
@@ -83,24 +83,43 @@ export class ExamplePlatformAccessory {
    */
   async setOn(value: CharacteristicValue) {
     // implement your own code to turn your device on/off
-    try {
-      const { data } = await got
-        .post(`http://${this.accessory.context.device.ip}`, {
-          method: 'GET',
-          timeout: { request: 5000 },
-          json: {
-            DA: { amOn: !!value },
-          },
-        })
-        .json();
-      this.platform.log.debug('Data recieved from actron POST req ->', data);
-      this.platform.log.debug('Get Characteristic On ->', value);
-    } catch (error) {
-      this.platform.log.debug('Actron Error in SET->', error);
-      throw new this.platform.api.hap.HapStatusError(
-        this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
-      );
-    }
+    // try {
+    //   const { data } = await got
+    //     .post(`http://${this.accessory.context.device.ip}`, {
+    //       method: 'GET',
+    //       timeout: { request: 5000 },
+    //       json: {
+    //         DA: { amOn: !!value },
+    //       },
+    //     })
+    //     .json();
+    //   this.platform.log.debug('Data recieved from actron POST req ->', data);
+    //   this.platform.log.debug('Get Characteristic On ->', value);
+    // } catch (error) {
+    //   this.platform.log.debug('Actron Error in SET->', error);
+    //   throw new this.platform.api.hap.HapStatusError(
+    //     this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
+    //   );
+    // }
+
+    request({
+      url: `http://${this.accessory.context.device.ip}`,
+      body: JSON.stringify({'DA':{'amOn': value} }),
+      method: 'POST',
+      headers: {'Content-type': 'application/json'},
+      timeout: 5000,
+    }, (error, response, body) => {
+      if (error) {
+        this.platform.log.debug('Actron Error in SET->', error);
+        throw new this.platform.api.hap.HapStatusError(
+          this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
+        );
+      } else {
+        this.platform.log.debug('Data recieved from actron POST req ->', body);
+        this.platform.log.debug('Get Characteristic On ->', value);
+      }
+    });
+
   }
 
   /**
@@ -116,23 +135,38 @@ export class ExamplePlatformAccessory {
    * @example
    * this.service.updateCharacteristic(this.platform.Characteristic.On, true)
    */
-  async getOn(): Promise<CharacteristicValue> {
-    try {
-      const { data } = await got
-        .get(`http://${this.accessory.context.device.ip}`, {
-          method: 'GET',
-          timeout: { request: 5000 },
-        })
-        .json();
-      this.platform.log.debug('Data recieved from actron GET req ->', data);
-      this.platform.log.debug('Get Characteristic On ->', data.currentState);
-      return data.currentState;
-    } catch (error) {
-      this.platform.log.debug('Actron Error in GET->', error);
-      throw new this.platform.api.hap.HapStatusError(
-        this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
-      );
-    }
+  getOn() {
+    // try {
+    //   const { data } = await got
+    //     .get(`http://${this.accessory.context.device.ip}`, {
+    //       method: 'GET',
+    //       timeout: { request: 5000 },
+    //     })
+    //     .json();
+    //   this.platform.log.debug('Data recieved from actron GET req ->', data);
+    //   this.platform.log.debug('Get Characteristic On ->', data.currentState);
+    //   return data.currentState;
+    // } catch (error) {
+    //   this.platform.log.debug('Actron Error in GET->', error);
+    //   throw new this.platform.api.hap.HapStatusError(
+    //     this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
+    //   );
+    // }
+    request({
+      url: `http://${this.accessory.context.device.ip}`,
+      method: 'GET',
+    }, (error, response, body) => {
+      if (error) {
+        this.platform.log.debug('Actron Error in GET->', error);
+        throw new this.platform.api.hap.HapStatusError(
+          this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
+        );
+      } else {
+        this.platform.log.debug('Data recieved from actron GET req ->', body);
+        this.platform.log.debug('Get Characteristic On ->', body.currentState);
+        return body.currentState as CharacteristicValue;
+      }
+    });
 
     // if you need to return an error to show the device as "Not Responding" in the Home app:
     // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
