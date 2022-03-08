@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
+  "pluginAlias": "Homebridge Actronair",
   "pluginType": "platform",
   "singular": true,
   "schema": {
@@ -9,7 +9,38 @@
         "title": "Name",
         "type": "string",
         "required": true,
-        "default": "Example Dynamic Platform"
+        "default": "Actron"
+      },
+      "accessories": {
+        "type": "array",
+        "title": "Accessories",
+        "required": true,
+        "default": [],
+        "items": { "$ref": "#/$defs/accessory" }
+      }
+    },
+    "$defs": {
+      "accessory": {
+        "type": "object",
+        "required": [],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the accessory",
+            "name": "Name",
+            "default": "Accessory"
+          },
+          "ip": {
+            "type": "string",
+            "description": "IP address of the accessory (local network only)",
+            "name": "IP Address"
+          },
+          "mac": {
+            "type": "string",
+            "description": "MAC address of the accessory (local network only)",
+            "name": "MAC Address"
+          }
+        }
       }
     }
   }
