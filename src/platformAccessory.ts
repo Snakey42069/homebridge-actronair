@@ -1,6 +1,5 @@
 import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const got = require('got');
+const got = import('got');
 import { ExampleHomebridgePlatform } from './platform';
 
 /**
