@@ -135,38 +135,26 @@ export class ExamplePlatformAccessory {
    * @example
    * this.service.updateCharacteristic(this.platform.Characteristic.On, true)
    */
-  getOn() {
-    // try {
-    //   const { data } = await got
-    //     .get(`http://${this.accessory.context.device.ip}`, {
-    //       method: 'GET',
-    //       timeout: { request: 5000 },
-    //     })
-    //     .json();
-    //   this.platform.log.debug('Data recieved from actron GET req ->', data);
-    //   this.platform.log.debug('Get Characteristic On ->', data.currentState);
-    //   return data.currentState;
-    // } catch (error) {
-    //   this.platform.log.debug('Actron Error in GET->', error);
-    //   throw new this.platform.api.hap.HapStatusError(
-    //     this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
-    //   );
-    // }
-    request({
-      url: `http://${this.accessory.context.device.ip}`,
-      method: 'GET',
-    }, (error, response, body) => {
-      if (error) {
-        this.platform.log.debug('Actron Error in GET->', error);
-        throw new this.platform.api.hap.HapStatusError(
-          this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
-        );
-      } else {
+  async getOn(): Promise<CharacteristicValue> {
+    return new Promise<CharacteristicValue>((resolve, reject) => {
+
+
+      request({
+        url: `http://${this.accessory.context.device.ip}`,
+        method: 'GET',
+        timeout: 5000,
+      }, (error, response, body) => {
+        if (error) {
+          this.platform.log.debug('Actron Error in GET->', error);
+          reject(new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
+        }
         this.platform.log.debug('Data recieved from actron GET req ->', body);
         this.platform.log.debug('Get Characteristic On ->', body.currentState);
-        return body.currentState as CharacteristicValue;
-      }
+        resolve(body.currentState as CharacteristicValue);
+      });
+
     });
+
 
     // if you need to return an error to show the device as "Not Responding" in the Home app:
     // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
