@@ -39,6 +39,16 @@
             "type": "string",
             "description": "MAC address of the accessory (local network only)",
             "name": "MAC Address"
+          },
+          "device_token": {
+            "type": "string",
+            "description": "Device token of the accessory",
+            "name": "Device Token"
+          },
+          "user_token": {
+            "type": "string",
+            "description": "Secret user token of the accessory",
+            "name": "User Token"
           }
         }
       }

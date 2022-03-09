@@ -104,10 +104,10 @@ export class ExamplePlatformAccessory {
     // }
 
     request({
-      url: `http://${this.accessory.context.device.ip}`,
+      url: `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`,
       body: JSON.stringify({'DA':{'amOn': value} }),
-      method: 'POST',
-      headers: {'Content-type': 'application/json'},
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
       timeout: 5000,
     }, (error, response, body) => {
       if (error) {
@@ -141,7 +141,7 @@ export class ExamplePlatformAccessory {
 
 
       request({
-        url: `http://${this.accessory.context.device.ip}`,
+        url: `http://${this.accessory.context.device.ip}/4.json`,
         method: 'GET',
         timeout: 5000,
       }, (error, response, body) => {
@@ -150,8 +150,8 @@ export class ExamplePlatformAccessory {
           reject(new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
         }
         this.platform.log.debug('Data recieved from actron GET req ->', body);
-        this.platform.log.debug('Get Characteristic On ->', body.currentState);
-        resolve(body.currentState as CharacteristicValue);
+        this.platform.log.debug('Get Characteristic On ->', body.amOn);
+        resolve(body.amOn as CharacteristicValue);
       });
 
     });
