@@ -150,7 +150,7 @@ export class ExamplePlatformAccessory {
           this.platform.log.debug('Actron Error in GET->', error);
           reject(new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
         }
-        let b: Record<string, any>;
+        let b: Record<string, string>;
         if (typeof body === 'string') {
           b = JSON.parse(body);
         } else {
