@@ -25,8 +25,8 @@ export class ExamplePlatformAccessory {
     // get the LightBulb service if it exists, otherwise create a new LightBulb service
     // you can create multiple services for each accessory
     this.service =
-      this.accessory.getService(this.platform.Service.HeaterCooler) ||
-      this.accessory.addService(this.platform.Service.HeaterCooler);
+      this.accessory.getService(this.platform.Service.Thermostat) ||
+      this.accessory.addService(this.platform.Service.Thermostat);
 
     // set the service name, this is what is displayed as the default name on the Home app
     // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
@@ -43,82 +43,24 @@ export class ExamplePlatformAccessory {
     // each service must implement at-minimum the "required characteristics" for the given service type
     // see https://developers.homebridge.io/#/service/Lightbulb
 
-    // register handlers for the On/Off Characteristic
     this.service
-      .getCharacteristic(this.platform.Characteristic.Active)
-      .onSet(this.setActiveHandler.bind(this))
-      .onGet(this.getActiveHandler.bind(this));
+      .getCharacteristic(this.platform.Characteristic.CurrentHeatingCoolingState)
+      .onGet(this.handleCurrentHeatingCoolingStateGet.bind(this));
 
-    this.service
-      .getCharacteristic(this.platform.Characteristic.CurrentHeaterCoolerState)
-      .onGet(this.getCurrentHeaterCoolerStateHandler.bind(this)); // GET - bind to the `getOn` method below
-
-    this.service.getCharacteristic(this.platform.Characteristic.CurrentHeaterCoolerState).setProps({maxValue: 4});
-
-    this.service.getCharacteristic(this.platform.Characteristic.TargetHeaterCoolerState)
-      .onGet(this.handleTargetHeaterCoolerStateGet.bind(this))
-      .onSet(this.handleTargetHeaterCoolerStateSet.bind(this));
+    this.service.getCharacteristic(this.platform.Characteristic.TargetHeatingCoolingState)
+      .onGet(this.handleTargetHeatingCoolingStateGet.bind(this))
+      .onSet(this.handleTargetHeatingCoolingStateSet.bind(this));
 
     this.service.getCharacteristic(this.platform.Characteristic.CurrentTemperature)
       .onGet(this.handleCurrentTemperatureGet.bind(this));
 
-  }
-
-  setActiveHandler(value: CharacteristicValue) {
-    // eslint-disable-next-line max-len
-    const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
-    this.platform.log.debug('ActronURL ->', url);
-    request({
-      url: url,
-      body: JSON.stringify({'DA':{'amOn': !!value}}),
-      method: 'PUT',
-      headers: {'Content-Type': 'application/json'},
-      timeout: 5000,
-      qs: {'user_access_token': this.accessory.context.device.user_token},
-    }, (error, response, body) => {
-      if (error) {
-        this.platform.log.debug('Actron Error in SET->', error);
-        throw new this.platform.api.hap.HapStatusError(
-          this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
-        );
-      } else {
-        this.platform.log.debug('Data recieved from actron POST req ->', body);
-        this.platform.log.info('Set aircon state to ->', value);
-      }
-    });
+    this.service.getCharacteristic(this.platform.Characteristic.TargetTemperature)
+      .onGet(this.handleTargetTemperatureGet.bind(this))
+      .onSet(this.handleTargetTemperatureSet.bind(this));
 
   }
 
-  async getActiveHandler(): Promise<CharacteristicValue> {
-    return new Promise<CharacteristicValue>((resolve, reject) => {
-      // eslint-disable-next-line max-len
-      const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
-      request({
-        url: url,
-        method: 'GET',
-        headers: {'Content-Type': 'application/json'},
-        timeout: 5000,
-      }, (error, response, body) => {
-        if (error) {
-          this.platform.log.debug('Actron Error in GET->', error);
-          reject(new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
-        }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let b: Record<any, any>;
-        if (typeof body === 'string') {
-          b = JSON.parse(body);
-        } else {
-          b = body;
-        }
-        this.platform.log.debug('Data recieved from actron GET req ->', b);
-        this.platform.log.info('Aircon active state ->', !!b.data.last_data.DA.amOn);
-        resolve(b.data.last_data.DA.amOn ? this.platform.Characteristic.Active.ACTIVE : this.platform.Characteristic.Active.INACTIVE);
-      });
-
-    });
-  }
-
-  async getCurrentHeaterCoolerStateHandler(): Promise<CharacteristicValue> {
+  async handleCurrentHeatingCoolingStateGet(): Promise<CharacteristicValue> {
     return new Promise<CharacteristicValue>((resolve, reject) => {
       // eslint-disable-next-line max-len
       const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
@@ -142,26 +84,20 @@ export class ExamplePlatformAccessory {
         const m = b.data.last_data.DA.mode;
         this.platform.log.debug('Data recieved from actron currentHeaterCool GET req ->', b);
         if (!b.data.last_data.DA.amOn) {
-          this.platform.log.info('Aircon state ->', 'INACTIVE');
-          resolve(this.platform.Characteristic.CurrentHeaterCoolerState.INACTIVE);
-        }else if(m===0) {
-          this.platform.log.info('Aircon state ->', 'AUTO');
-          resolve(4);
-        } else if (m === 1) {
-          this.platform.log.info('Aircon state ->', 'HEATING');
-          resolve(this.platform.Characteristic.CurrentHeaterCoolerState.HEATING);
-        } else if (m ===2) {
-          this.platform.log.info('Aircon state ->', 'COOLING');
-          resolve(this.platform.Characteristic.CurrentHeaterCoolerState.COOLING);
+          this.platform.log.info('Aircon HC state ->', 'OFF');
+          resolve(this.platform.Characteristic.CurrentHeatingCoolingState.OFF);
+        }else if(m===0 || m === 2 || m === 3) {
+          this.platform.log.info('Aircon HC state ->', 'COOL');
+          resolve(this.platform.Characteristic.CurrentHeatingCoolingState.COOL);
         } else {
-          this.platform.log.info('Aircon state ->', 'FAN/IDLE');
-          resolve(this.platform.Characteristic.CurrentHeaterCoolerState.IDLE);
+          this.platform.log.info('Aircon HC state ->', 'HEAT');
+          resolve(this.platform.Characteristic.CurrentHeatingCoolingState.HEAT);
         }
       });
     });
   }
 
-  async handleTargetHeaterCoolerStateGet():Promise<CharacteristicValue> {
+  async handleTargetHeatingCoolingStateGet():Promise<CharacteristicValue> {
     return new Promise<CharacteristicValue>((resolve, reject) => {
       // eslint-disable-next-line max-len
       const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
@@ -184,41 +120,41 @@ export class ExamplePlatformAccessory {
         }
         const m = b.data.last_data.DA.mode;
         this.platform.log.debug('Data recieved from actron currentHeaterCool GET req ->', b);
-        this.platform.log.debug('Get CurrentHeaterCoolerState Characteristic ->', m);
-        if(m===0) {
+        this.platform.log.debug('Get TargetHeatingCoolingState Characteristic ->', m);
+        if(!b.data.last_data.DA.amOn) {
+          this.platform.log.info('Aircon target state ->', 'OFF');
+          resolve(this.platform.Characteristic.TargetHeatingCoolingState.OFF);
+        } else if (m === 0) {
           this.platform.log.info('Aircon target state ->', 'AUTO');
-          resolve(this.platform.Characteristic.TargetHeaterCoolerState.AUTO);
-        } else if (m === 1) {
+          resolve(this.platform.Characteristic.TargetHeatingCoolingState.AUTO);
+        } else if (m ===1) {
           this.platform.log.info('Aircon target state ->', 'HEAT');
-          resolve(this.platform.Characteristic.TargetHeaterCoolerState.HEAT);
-        } else if (m ===2) {
-          this.platform.log.info('Aircon target state ->', 'COOL');
-          resolve(this.platform.Characteristic.TargetHeaterCoolerState.COOL);
-        } else {
+          resolve(this.platform.Characteristic.TargetHeatingCoolingState.HEAT);
+        } else if (m ===2 || m ===3) {
           this.platform.log.info('Aircon target state ->', 'COOL/FAN');
-          resolve(this.platform.Characteristic.TargetHeaterCoolerState.COOL);
+          resolve(this.platform.Characteristic.TargetHeatingCoolingState.COOL);
         }
       });
     });
   }
 
-  handleTargetHeaterCoolerStateSet(value) {
+  handleTargetHeatingCoolingStateSet(value) {
     // eslint-disable-next-line max-len
     const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
     this.platform.log.debug('ActronURL ->', url);
     let d = value;
-    if (value === this.platform.Characteristic.TargetHeaterCoolerState.AUTO ) {
-      d = 0;
-    } else if ( value === this.platform.Characteristic.TargetHeaterCoolerState.HEAT) {
-      d = 1;
-    } else if (value === this.platform.Characteristic.TargetHeaterCoolerState.COOL) {
-      d = 2;
+    if (value === this.platform.Characteristic.TargetHeatingCoolingState.OFF ) {
+      d = {'DA':{'amOn': false}};
+    } else if ( value === this.platform.Characteristic.TargetHeatingCoolingState.HEAT) {
+      d = {'DA':{'mode': 1}};
+    } else if (value === this.platform.Characteristic.TargetHeatingCoolingState.COOL) {
+      d = {'DA':{'mode': 2}};
     } else {
-      d = 3;
+      d = {'DA':{'mode': 0}};
     }
     request({
       url: url,
-      body: JSON.stringify({'DA':{'mode': d}}),
+      body: JSON.stringify(d),
       method: 'PUT',
       headers: {'Content-Type': 'application/json'},
       timeout: 5000,
@@ -231,7 +167,7 @@ export class ExamplePlatformAccessory {
         );
       } else {
         this.platform.log.debug('Data recieved from actron POST req ->', body);
-        this.platform.log.debug('Aircon target state set to ->', value);
+        this.platform.log.info('Aircon target state set to ->', value);
       }
     });
   }
@@ -261,7 +197,60 @@ export class ExamplePlatformAccessory {
         this.platform.log.info('Aircon current temp ->', b.roomTemp_oC);
         resolve(b.roomTemp_oC as CharacteristicValue);
       });
+    });
+  }
+
+  async handleTargetTemperatureGet(): Promise<CharacteristicValue> {
+    return new Promise<CharacteristicValue>((resolve, reject) => {
+      // eslint-disable-next-line max-len
+      const url = `http://${this.accessory.context.device.ip}/6.json`;
+      request({
+        url: url,
+        method: 'GET',
+        headers: {'Content-Type': 'application/json'},
+        timeout: 5000,
+      }, (error, response, body) => {
+        if (error) {
+          this.platform.log.debug('Actron Error in GET->', error);
+          reject(new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let b: Record<any, any>;
+        if (typeof body === 'string') {
+          b = JSON.parse(body);
+        } else {
+          b = body;
+        }
+        this.platform.log.debug('Data recieved from actron GET req ->', b);
+        this.platform.log.info('Aircon current setPoint temp ->', b.setPoint);
+        resolve(b.setPoint as CharacteristicValue);
+      });
 
     });
   }
+
+  handleTargetTemperatureSet(value){
+    // eslint-disable-next-line max-len
+    const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
+    this.platform.log.debug('ActronURL ->', url);
+    request({
+      url: url,
+      body: JSON.stringify({'DA':{'setPoint': value}}),
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      timeout: 5000,
+      qs: {'user_access_token': this.accessory.context.device.user_token},
+    }, (error, response, body) => {
+      if (error) {
+        this.platform.log.debug('Actron Error in SET->', error);
+        throw new this.platform.api.hap.HapStatusError(
+          this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
+        );
+      } else {
+        this.platform.log.debug('Data recieved from actron POST req ->', body);
+        this.platform.log.info('Aircon setPoint set to ->', value);
+      }
+    });
+  }
+
 }
