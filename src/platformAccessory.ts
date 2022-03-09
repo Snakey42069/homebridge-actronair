@@ -111,8 +111,8 @@ export class ExamplePlatformAccessory {
           b = body;
         }
         this.platform.log.debug('Data recieved from actron GET req ->', b);
-        this.platform.log.info('Aircon state ->', !!b.data.last_data.DA.amOn);
-        resolve(!!b.data.last_data.DA.amOn as CharacteristicValue);
+        this.platform.log.info('Aircon active state ->', !!b.data.last_data.DA.amOn);
+        resolve(b.data.last_data.DA.amOn ? this.platform.Characteristic.Active.ACTIVE : this.platform.Characteristic.Active.INACTIVE);
       });
 
     });
