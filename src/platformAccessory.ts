@@ -236,7 +236,7 @@ export class ExamplePlatformAccessory {
     });
   }
 
-  handleCurrentTemperatureGet() {
+  async handleCurrentTemperatureGet() {
     return new Promise<CharacteristicValue>((resolve, reject) => {
       // eslint-disable-next-line max-len
       const url = `http://${this.accessory.context.device.ip}/6.json`;
@@ -258,8 +258,8 @@ export class ExamplePlatformAccessory {
           b = body;
         }
         this.platform.log.debug('Data recieved from actron GET req ->', b);
-        this.platform.log.info('Aircon current temp ->', b.data.last_data.DA.roomTemp_oC);
-        resolve(b.data.last_data.DA.roomTemp_oC as CharacteristicValue);
+        this.platform.log.info('Aircon current temp ->', b.roomTemp_oC);
+        resolve(b.roomTemp_oC as CharacteristicValue);
       });
 
     });
