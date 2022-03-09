@@ -146,11 +146,11 @@ export class ExamplePlatformAccessory {
     if (value === this.platform.Characteristic.TargetHeatingCoolingState.OFF ) {
       d = {'DA':{'amOn': false}};
     } else if ( value === this.platform.Characteristic.TargetHeatingCoolingState.HEAT) {
-      d = {'DA':{'mode': 1}};
+      d = {'DA':{'amOn': true, 'mode': 1}};
     } else if (value === this.platform.Characteristic.TargetHeatingCoolingState.COOL) {
-      d = {'DA':{'mode': 2}};
+      d = {'DA':{'amOn': true, 'mode': 2}};
     } else {
-      d = {'DA':{'mode': 0}};
+      d = {'DA':{'amOn': true, 'mode': 0}};
     }
     request({
       url: url,
