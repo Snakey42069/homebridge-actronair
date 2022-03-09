@@ -104,6 +104,7 @@ export class ExamplePlatformAccessory {
     // }
 
     request({
+      // eslint-disable-next-line max-len
       url: `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`,
       body: JSON.stringify({'DA':{'amOn': value} }),
       method: 'PUT',
