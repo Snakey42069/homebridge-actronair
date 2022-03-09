@@ -164,7 +164,7 @@ export class ExamplePlatformAccessory {
         }
         this.platform.log.info('Data recieved from actron GET req ->', b);
         this.platform.log.info('Get Characteristic On ->', !!b.data.last_data.DA.amOn);
-        resolve(!!b.data.amOn as CharacteristicValue);
+        resolve(!!b.data.last_data.DA.amOn as CharacteristicValue);
       });
 
     });
