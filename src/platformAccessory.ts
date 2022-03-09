@@ -108,7 +108,7 @@ export class ExamplePlatformAccessory {
     request({
 
       url: url,
-      body: {'DA':{'amOn': value} },
+      body: JSON.stringify({'DA':{'amOn': !!value}}),
       method: 'PUT',
       headers: {'Content-Type': 'application/json'},
       timeout: 5000,
@@ -121,7 +121,7 @@ export class ExamplePlatformAccessory {
         );
       } else {
         this.platform.log.info('Data recieved from actron POST req ->', body);
-        this.platform.log.info('Get Characteristic On ->', value);
+        this.platform.log.info('Get Characteristic On pre POST ->', value);
       }
     });
 
