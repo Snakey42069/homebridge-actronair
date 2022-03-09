@@ -157,8 +157,8 @@ export class ExamplePlatformAccessory {
           b = body;
         }
         this.platform.log.debug('Data recieved from actron GET req ->', b);
-        this.platform.log.debug('Get Characteristic On ->', b['amOn']);
-        resolve(body.amOn as CharacteristicValue);
+        this.platform.log.debug('Get Characteristic On ->', !!b['amOn']);
+        resolve(!!body.amOn as CharacteristicValue);
       });
 
     });
