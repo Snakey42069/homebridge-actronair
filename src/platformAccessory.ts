@@ -103,7 +103,8 @@ export class ExamplePlatformAccessory {
     //   );
     // }
     // eslint-disable-next-line max-len
-    const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}`;
+    const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
+    this.platform.log.info('ActronURL ->', url);
     request({
 
       url: url,
@@ -114,13 +115,13 @@ export class ExamplePlatformAccessory {
       qs: {'user_access_token': this.accessory.context.device.user_token},
     }, (error, response, body) => {
       if (error) {
-        this.platform.log.debug('Actron Error in SET->', error);
+        this.platform.log.info('Actron Error in SET->', error);
         throw new this.platform.api.hap.HapStatusError(
           this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
         );
       } else {
-        this.platform.log.debug('Data recieved from actron POST req ->', body);
-        this.platform.log.debug('Get Characteristic On ->', value);
+        this.platform.log.info('Data recieved from actron POST req ->', body);
+        this.platform.log.info('Get Characteristic On ->', value);
       }
     });
 
