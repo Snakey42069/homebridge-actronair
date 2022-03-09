@@ -150,8 +150,14 @@ export class ExamplePlatformAccessory {
           this.platform.log.debug('Actron Error in GET->', error);
           reject(new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
         }
-        this.platform.log.debug('Data recieved from actron GET req ->', body);
-        this.platform.log.debug('Get Characteristic On ->', body.amOn);
+        let b: Record<string, any>;
+        if (typeof body === 'string') {
+          b = JSON.parse(body);
+        } else {
+          b = body;
+        }
+        this.platform.log.debug('Data recieved from actron GET req ->', b);
+        this.platform.log.debug('Get Characteristic On ->', b['amOn']);
         resolve(body.amOn as CharacteristicValue);
       });
 
