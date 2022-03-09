@@ -60,7 +60,7 @@ export class ExamplePlatformAccessory {
       .onSet(this.handleTargetHeaterCoolerStateSet.bind(this));
 
     this.service.getCharacteristic(this.platform.Characteristic.CurrentTemperature)
-      .onGet(this.handleTargetHeaterCoolerStateGet.bind(this));
+      .onGet(this.handleCurrentTemperatureGet.bind(this));
 
   }
 
