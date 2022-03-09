@@ -108,7 +108,7 @@ export class ExamplePlatformAccessory {
     request({
 
       url: url,
-      body: JSON.stringify({'DA':{'amOn': value} }),
+      body: {'DA':{'amOn': value} },
       method: 'PUT',
       headers: {'Content-Type': 'application/json'},
       timeout: 5000,
@@ -159,8 +159,8 @@ export class ExamplePlatformAccessory {
         } else {
           b = body;
         }
-        this.platform.log.debug('Data recieved from actron GET req ->', b);
-        this.platform.log.debug('Get Characteristic On ->', !!b['amOn']);
+        this.platform.log.info('Data recieved from actron GET req ->', b);
+        this.platform.log.info('Get Characteristic On ->', !!b['amOn']);
         resolve(!!body.amOn as CharacteristicValue);
       });
 
