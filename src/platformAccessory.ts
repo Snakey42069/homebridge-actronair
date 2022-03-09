@@ -102,14 +102,16 @@ export class ExamplePlatformAccessory {
     //     this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
     //   );
     // }
-
+    // eslint-disable-next-line max-len
+    const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}`;
     request({
-      // eslint-disable-next-line max-len
-      url: `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`,
+
+      url: url,
       body: JSON.stringify({'DA':{'amOn': value} }),
       method: 'PUT',
       headers: {'Content-Type': 'application/json'},
       timeout: 5000,
+      qs: {'user_access_token': this.accessory.context.device.user_token},
     }, (error, response, body) => {
       if (error) {
         this.platform.log.debug('Actron Error in SET->', error);
