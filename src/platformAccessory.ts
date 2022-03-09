@@ -143,25 +143,28 @@ export class ExamplePlatformAccessory {
   async getOn(): Promise<CharacteristicValue> {
     return new Promise<CharacteristicValue>((resolve, reject) => {
 
-
+      // eslint-disable-next-line max-len
+      const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
       request({
-        url: `http://${this.accessory.context.device.ip}/4.json`,
+        url: url,
         method: 'GET',
+        headers: {'Content-Type': 'application/json'},
         timeout: 5000,
       }, (error, response, body) => {
         if (error) {
           this.platform.log.debug('Actron Error in GET->', error);
           reject(new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
         }
-        let b: Record<string, string>;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let b: Record<any, any>;
         if (typeof body === 'string') {
           b = JSON.parse(body);
         } else {
           b = body;
         }
         this.platform.log.info('Data recieved from actron GET req ->', b);
-        this.platform.log.info('Get Characteristic On ->', !!b['amOn']);
-        resolve(!!body.amOn as CharacteristicValue);
+        this.platform.log.info('Get Characteristic On ->', !!b.data.amOn);
+        resolve(!!b.data.amOn as CharacteristicValue);
       });
 
     });
