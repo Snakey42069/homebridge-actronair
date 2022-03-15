@@ -22,33 +22,57 @@
     "$defs": {
       "accessory": {
         "type": "object",
-        "required": [],
         "properties": {
           "name": {
             "type": "string",
             "description": "Name of the accessory",
             "name": "Name",
-            "default": "Accessory"
+            "default": "Accessory",
+            "required": true
           },
           "ip": {
             "type": "string",
             "description": "IP address of the accessory (local network only)",
-            "name": "IP Address"
+            "name": "IP Address",
+            "required": true
           },
           "mac": {
             "type": "string",
             "description": "MAC address of the accessory (local network only)",
-            "name": "MAC Address"
+            "name": "MAC Address",
+            "required": true
           },
           "device_token": {
             "type": "string",
             "description": "Device token of the accessory",
-            "name": "Device Token"
+            "name": "Device Token",
+            "required": true
           },
           "user_token": {
             "type": "string",
             "description": "Secret user token of the accessory",
-            "name": "User Token"
+            "name": "User Token",
+            "required": true
+          },
+          "zones": {
+            "type": "array",
+            "title": "Zones",
+            "required": true,
+            "default": [],
+            "items": { "$ref": "#/$defs/zone" }
+          }
+        }
+      },
+      "zone": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "required": true
+          },
+          "index": {
+            "type": "number",
+            "required": true
           }
         }
       }
