@@ -33,6 +33,7 @@ ip | string | '192.168.1.69' | The local IP address of the aircon unit. You will
 mac | string | '00:00:5e:00:53:af' | The MAC Address of the aircon unit.
 device_token | string | 'AIRCON_DJEE31JV21_AJ' | The unique device token of your aircon unit. See below for instruction to find your unit's ```device_token```.
 user_token | string | 'JDh4g2jv423khj4MJ3l4g32DSk' | A unique access token generated for your user account. See below for instruction to get a ```user_token```.
+zones | array | '{name: 'Bedroom', index: 0}' | Zone configuration. Set ```name``` to a user-friendly display name string. Set ```index``` to the position of the zone in the zones list (0 based because JS).
 
 You can also edit your config file directly, though it is not recommended.
 ### How to find device_token and user_token
@@ -42,7 +43,7 @@ https://que.actronair.com.au/rest/v0/device/device_token?user_access_token=user_
 ```
 Use the extracted ```device_token``` and ```user_token``` in the plugin config. 
 ## Planned Features and ToDo
-[] Allow toggling of zones
+[X] Allow toggling of zones
 
 [] Simplify config file
 

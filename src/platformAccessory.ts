@@ -12,13 +12,11 @@ export class ExamplePlatformAccessory {
   private service: Service;
   private zones = {};
   private zonesDump = [];
-  // private last_state: {amOn: boolean; tempTarget: number; mode: number; fanSpeed: number; enabledZones: number[]} = {};
 
   constructor(
     private readonly platform: ExampleHomebridgePlatform,
     private readonly accessory: PlatformAccessory,
   ) {
-    // set accessory information
     this.accessory
       .getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(
@@ -26,8 +24,7 @@ export class ExamplePlatformAccessory {
         'ActronAir',
       );
 
-    // get the LightBulb service if it exists, otherwise create a new LightBulb service
-    // you can create multiple services for each accessory
+
     this.service =
       this.accessory.getService(this.platform.Service.Thermostat) ||
       this.accessory.addService(this.platform.Service.Thermostat);
@@ -46,10 +43,10 @@ export class ExamplePlatformAccessory {
 
     const zConfig: Record<string, string>[] =
       this.accessory.context.device.zones;
-    this.platform.log.info('Actoren SETUP zconfig ->', zConfig, this.accessory.context.device.zones);
+    this.platform.log.debug('Actoren SETUP zconfig ->', zConfig, this.accessory.context.device.zones);
     if (zConfig && Array.isArray(zConfig) && zConfig.length > 0) {
       for (const z of zConfig) {
-        this.platform.log.info('Actoren SETUP Z now ->', z);
+        this.platform.log.debug('Actoren SETUP Z now ->', z);
         this.zones[String(z.index)] =
           this.accessory.getService(z.name) ||
           this.accessory.addService(
@@ -65,12 +62,9 @@ export class ExamplePlatformAccessory {
           .getCharacteristic(this.platform.Characteristic.On)
           .onGet(this.handleZoneOnGet.bind(this, z.index))
           .onSet(this.handleZoneOnSet.bind(this, z.index));
-        this.platform.log.info('Actoren SETUP REGISTERED ->', z, z.index, this.zones[String(z.index)]);
+        this.platform.log.debug('Actoren SETUP REGISTERED ->', z, z.index, this.zones[String(z.index)]);
       }
     }
-
-    // each service must implement at-minimum the "required characteristics" for the given service type
-    // see https://developers.homebridge.io/#/service/Lightbulb
 
     this.service
       .getCharacteristic(
@@ -126,17 +120,17 @@ export class ExamplePlatformAccessory {
             b,
           );
           if (!b.data.last_data.DA.amOn) {
-            this.platform.log.info('Aircon HC state ->', 'OFF');
+            this.platform.log.debug('Aircon HC state ->', 'OFF');
             resolve(
               this.platform.Characteristic.CurrentHeatingCoolingState.OFF,
             );
           } else if (m === 0 || m === 2 || m === 3) {
-            this.platform.log.info('Aircon HC state ->', 'COOL');
+            this.platform.log.debug('Aircon HC state ->', 'COOL');
             resolve(
               this.platform.Characteristic.CurrentHeatingCoolingState.COOL,
             );
           } else {
-            this.platform.log.info('Aircon HC state ->', 'HEAT');
+            this.platform.log.debug('Aircon HC state ->', 'HEAT');
             resolve(
               this.platform.Characteristic.CurrentHeatingCoolingState.HEAT,
             );
@@ -183,20 +177,20 @@ export class ExamplePlatformAccessory {
             m,
           );
           if (!b.data.last_data.DA.amOn) {
-            this.platform.log.info('Aircon target state ->', 'OFF');
+            this.platform.log.debug('Aircon target state ->', 'OFF');
             resolve(this.platform.Characteristic.TargetHeatingCoolingState.OFF);
           } else if (m === 0) {
-            this.platform.log.info('Aircon target state ->', 'AUTO');
+            this.platform.log.debug('Aircon target state ->', 'AUTO');
             resolve(
               this.platform.Characteristic.TargetHeatingCoolingState.AUTO,
             );
           } else if (m === 1) {
-            this.platform.log.info('Aircon target state ->', 'HEAT');
+            this.platform.log.debug('Aircon target state ->', 'HEAT');
             resolve(
               this.platform.Characteristic.TargetHeatingCoolingState.HEAT,
             );
           } else if (m === 2 || m === 3) {
-            this.platform.log.info('Aircon target state ->', 'COOL/FAN');
+            this.platform.log.debug('Aircon target state ->', 'COOL/FAN');
             resolve(
               this.platform.Characteristic.TargetHeatingCoolingState.COOL,
             );
@@ -244,7 +238,7 @@ export class ExamplePlatformAccessory {
             'Data recieved from actron POST req ->',
             body,
           );
-          this.platform.log.info('Aircon target state set to ->', value);
+          this.platform.log.debug('Aircon target state set to ->', value);
         }
       },
     );
@@ -278,7 +272,7 @@ export class ExamplePlatformAccessory {
             b = body;
           }
           this.platform.log.debug('Data recieved from actron GET req ->', b);
-          this.platform.log.info('Aircon current temp ->', b.roomTemp_oC);
+          this.platform.log.debug('Aircon current temp ->', b.roomTemp_oC);
           resolve(b.roomTemp_oC as CharacteristicValue);
         },
       );
@@ -313,7 +307,7 @@ export class ExamplePlatformAccessory {
             b = body;
           }
           this.platform.log.debug('Data recieved from actron GET req ->', b);
-          this.platform.log.info('Aircon current setPoint temp ->', b.setPoint);
+          this.platform.log.debug('Aircon current setPoint temp ->', b.setPoint);
           resolve(b.setPoint as CharacteristicValue);
         },
       );
@@ -344,7 +338,7 @@ export class ExamplePlatformAccessory {
             'Data recieved from actron POST req ->',
             body,
           );
-          this.platform.log.info('Aircon setPoint set to ->', value);
+          this.platform.log.debug('Aircon setPoint set to ->', value);
         }
       },
     );
@@ -353,7 +347,7 @@ export class ExamplePlatformAccessory {
   async handleZoneOnGet(index) {
     return new Promise<CharacteristicValue>((resolve, reject) => {
       // eslint-disable-next-line max-len
-      this.platform.log.info('Actron INDEX PLZ WORK ->', index);
+      this.platform.log.debug('Actron INDEX PLZ WORK ->', index);
       const url = `http://${this.accessory.context.device.ip}/6.json`;
       request(
         {
@@ -390,32 +384,13 @@ export class ExamplePlatformAccessory {
     const temp = index;
     index = value;
     value = temp;
-    // request(
-    //   {
-    //     url: `http://${this.accessory.context.device.ip}/6.json`,
-    //     method: 'GET',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     timeout: 5000,
-    //   },
-    //   (error, response, body) => {
-    //     if (error) {
-    //       this.platform.log.debug('Actron Error in GET->', error);
 
-    //     }
-    //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    //     let b: Record<any, any>;
-    //     if (typeof body === 'string') {
-    //       b = JSON.parse(body);
-    //     } else {
-    //       b = body;
-    //     }
-    //     const zs = b.enabledZones;
     // eslint-disable-next-line max-len
     const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
-    this.platform.log.info('Actoren ARGAS value ->', value, 'idnex ->', index);
+    this.platform.log.debug('Actoren ARGAS value ->', value, 'idnex ->', index);
     const a = this.zonesDump as number[];
     a[index] = value;
-    this.platform.log.info('Actoren ZONES ->', a);
+    this.platform.log.debug('Actoren ZONES ->', a);
     request(
       {
         url: url,
@@ -436,11 +411,10 @@ export class ExamplePlatformAccessory {
             'Data recieved from actron POST req ->',
             body,
           );
-          this.platform.log.info('Aircon zones SET ->', index, value);
+          this.platform.log.debug('Aircon zones SET ->', index, value);
         }
       },
     );
-    //   },
-    // );
+
   }
 }
