@@ -46,8 +46,10 @@ export class ExamplePlatformAccessory {
 
     const zConfig: Record<string, string>[] =
       this.accessory.context.device.zones;
+    this.platform.log.info('Actoren SETUP zconfig ->', zConfig, this.accessory.context.device.zones);
     if (zConfig && Array.isArray(zConfig) && zConfig.length > 0) {
       for (const z of zConfig) {
+        this.platform.log.info('Actoren SETUP Z now ->', z);
         this.zones[String(z.index)] =
           this.accessory.getService(z.name) ||
           this.accessory.addService(
@@ -63,6 +65,7 @@ export class ExamplePlatformAccessory {
           .getCharacteristic(this.platform.Characteristic.On)
           .onGet(this.handleZoneOnGet.bind(this, z.index))
           .onSet(this.handleZoneOnSet.bind(this, z.index));
+        this.platform.log.info('Actoren SETUP REGISTERED ->', z, z.index, this.zones[String(z.index)]);
       }
     }
 
