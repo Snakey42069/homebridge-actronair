@@ -1,4 +1,3 @@
-import { rejects } from 'assert';
 import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('request');
