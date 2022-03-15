@@ -387,12 +387,32 @@ export class ExamplePlatformAccessory {
   }
 
   handleZoneOnSet(value, index) {
+    const temp = index;
+    index = value;
+    value = temp;
+    // request(
+    //   {
+    //     url: `http://${this.accessory.context.device.ip}/6.json`,
+    //     method: 'GET',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     timeout: 5000,
+    //   },
+    //   (error, response, body) => {
+    //     if (error) {
+    //       this.platform.log.debug('Actron Error in GET->', error);
+
+    //     }
+    //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //     let b: Record<any, any>;
+    //     if (typeof body === 'string') {
+    //       b = JSON.parse(body);
+    //     } else {
+    //       b = body;
+    //     }
+    //     const zs = b.enabledZones;
     // eslint-disable-next-line max-len
     const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
-    if (this.zonesDump.length === 0) {
-      throw new Error('zonedump error');
-    }
-    this.platform.log.info('Actoren ARGAS ->', value, index);
+    this.platform.log.info('Actoren ARGAS value ->', value, 'idnex ->', index);
     const a = this.zonesDump as number[];
     a[index] = value;
     this.platform.log.info('Actoren ZONES ->', a);
@@ -420,5 +440,7 @@ export class ExamplePlatformAccessory {
         }
       },
     );
+    //   },
+    // );
   }
 }
