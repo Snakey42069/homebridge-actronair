@@ -40,9 +40,13 @@ export class ExamplePlatformAccessory {
       `${accessory.context.device.name} Fan`,
     );
 
-    // Set up fan speed characteristic (0-100%)
     this.fanService
       .getCharacteristic(this.platform.Characteristic.RotationSpeed)
+      .setProps({
+        minStep: 34,    // Step value of 33 (maps to 3 levels: 33, 66, 100)
+        minValue: 33,   // Minimum value is 33
+        maxValue: 100,  // Maximum value is 100
+      })
       .onGet(this.handleFanSpeedGet.bind(this))
       .onSet(this.handleFanSpeedSet.bind(this));
 
@@ -438,8 +442,8 @@ export class ExamplePlatformAccessory {
   // Get fan speed from the API
   async handleFanSpeedGet(): Promise<CharacteristicValue> {
     return new Promise<CharacteristicValue>((resolve, reject) => {
+      // eslint-disable-next-line max-len
       const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
-      
       request(
         {
           url: url,
@@ -465,9 +469,9 @@ export class ExamplePlatformAccessory {
           const fanSpeed = data.data.last_data.DA.fanSpeed; // Assuming the API returns fan speed as 0, 1, or 2
           this.platform.log.debug('Fan speed fetched ->', fanSpeed);
 
-          // Convert fan speed (0-2) to percentage (0, 50, 100)
-          const fanSpeedPercentage = fanSpeed * 50;
-          resolve(fanSpeedPercentage);
+          const fanSpeedMap = [33, 67, 100];  // Map 0 -> 33, 1 -> 67, 2 -> 100
+          const fanSpeedLevel = fanSpeedMap[fanSpeed];
+          resolve(fanSpeedLevel);
         },
       );
     });
@@ -475,10 +479,17 @@ export class ExamplePlatformAccessory {
 
   // Set fan speed via the API
   handleFanSpeedSet(value: CharacteristicValue) {
+    // eslint-disable-next-line max-len
     const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
 
-    // Convert percentage (0-100) to fan speed (0, 1, 2)
-    const fanSpeed = Math.round((value as number) / 50);
+    let fanSpeed: number;
+    if (value === 33) {
+      fanSpeed = 0;
+    } else if (value === 67) {
+      fanSpeed = 1;
+    } else {
+      fanSpeed = 2;
+    }
 
     const requestBody = {
       DA: {
@@ -504,6 +515,10 @@ export class ExamplePlatformAccessory {
             this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
           );
         } else {
+          this.platform.log.debug(
+            'Data recieved from actron POST req ->',
+            body,
+          );
           this.platform.log.debug('Fan speed set to ->', fanSpeed);
         }
       },

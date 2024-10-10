@@ -2,7 +2,7 @@
   "private": false,
   "displayName": "Homebridge Actronair",
   "name": "homebridge-actronconnect",
-  "version": "3.0.13-a",
+  "version": "3.0.13-d",
   "description": "Homebridge plugin for actron air conditioners",
   "license": "Apache-2.0",
   "repository": {
