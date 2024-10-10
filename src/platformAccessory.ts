@@ -10,6 +10,7 @@ import { ExampleHomebridgePlatform } from './platform';
  */
 export class ExamplePlatformAccessory {
   private service: Service;
+  private fanService: Service;
   private zones = {};
   private zonesDump = [];
 
@@ -28,6 +29,22 @@ export class ExamplePlatformAccessory {
     this.service =
       this.accessory.getService(this.platform.Service.Thermostat) ||
       this.accessory.addService(this.platform.Service.Thermostat);
+
+    // Setup fan speed service
+    this.fanService =
+      this.accessory.getService(this.platform.Service.Fanv2) ||
+      this.accessory.addService(this.platform.Service.Fanv2);
+
+    this.fanService.setCharacteristic(
+      this.platform.Characteristic.Name,
+      `${accessory.context.device.name} Fan`,
+    );
+
+    // Set up fan speed characteristic (0-100%)
+    this.fanService
+      .getCharacteristic(this.platform.Characteristic.RotationSpeed)
+      .onGet(this.handleFanSpeedGet.bind(this))
+      .onSet(this.handleFanSpeedSet.bind(this));
 
     // set the service name, this is what is displayed as the default name on the Home app
     // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
@@ -307,8 +324,8 @@ export class ExamplePlatformAccessory {
             b = body;
           }
           this.platform.log.debug('Data recieved from actron GET req ->', b);
-          this.platform.log.debug('Aircon current setPoint temp ->', b.setPoint);
-          resolve(b.setPoint as CharacteristicValue);
+          this.platform.log.debug('Aircon current tempTarget temp ->', b.tempTarget);
+          resolve(b.tempTarget as CharacteristicValue);
         },
       );
     });
@@ -321,7 +338,7 @@ export class ExamplePlatformAccessory {
     request(
       {
         url: url,
-        body: JSON.stringify({ DA: { setPoint: value } }),
+        body: JSON.stringify({ DA: { tempTarget: value } }),
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         timeout: 5000,
@@ -338,7 +355,7 @@ export class ExamplePlatformAccessory {
             'Data recieved from actron POST req ->',
             body,
           );
-          this.platform.log.debug('Aircon setPoint set to ->', value);
+          this.platform.log.debug('Aircon tempTarget set to ->', value);
         }
       },
     );
@@ -416,5 +433,80 @@ export class ExamplePlatformAccessory {
       },
     );
 
+  }
+  
+  // Get fan speed from the API
+  async handleFanSpeedGet(): Promise<CharacteristicValue> {
+    return new Promise<CharacteristicValue>((resolve, reject) => {
+      const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
+      
+      request(
+        {
+          url: url,
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 5000,
+        },
+        (error, response, body) => {
+          if (error) {
+            this.platform.log.debug('Actron Error in GET Fan Speed->', error);
+            reject(
+              new this.platform.api.hap.HapStatusError(
+                this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
+              ),
+            );
+          }
+          let data;
+          if (typeof body === 'string') {
+            data = JSON.parse(body);
+          } else {
+            data = body;
+          }
+          const fanSpeed = data.data.last_data.DA.fanSpeed; // Assuming the API returns fan speed as 0, 1, or 2
+          this.platform.log.debug('Fan speed fetched ->', fanSpeed);
+
+          // Convert fan speed (0-2) to percentage (0, 50, 100)
+          const fanSpeedPercentage = fanSpeed * 50;
+          resolve(fanSpeedPercentage);
+        },
+      );
+    });
+  }
+
+  // Set fan speed via the API
+  handleFanSpeedSet(value: CharacteristicValue) {
+    const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
+    
+    // Convert percentage (0-100) to fan speed (0, 1, 2)
+    const fanSpeed = Math.round((value as number) / 50);
+
+    const requestBody = {
+      DA: {
+        fanSpeed: fanSpeed,
+      },
+    };
+
+    this.platform.log.debug('Setting fan speed to ->', fanSpeed);
+
+    request(
+      {
+        url: url,
+        body: JSON.stringify(requestBody),
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 5000,
+        qs: { user_access_token: this.accessory.context.device.user_token },
+      },
+      (error, response, body) => {
+        if (error) {
+          this.platform.log.debug('Actron Error in SET Fan Speed->', error);
+          throw new this.platform.api.hap.HapStatusError(
+            this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
+          );
+        } else {
+          this.platform.log.debug('Fan speed set to ->', fanSpeed);
+        }
+      },
+    );
   }
 }
