@@ -434,7 +434,7 @@ export class ExamplePlatformAccessory {
     );
 
   }
-  
+
   // Get fan speed from the API
   async handleFanSpeedGet(): Promise<CharacteristicValue> {
     return new Promise<CharacteristicValue>((resolve, reject) => {
@@ -476,7 +476,7 @@ export class ExamplePlatformAccessory {
   // Set fan speed via the API
   handleFanSpeedSet(value: CharacteristicValue) {
     const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
-    
+
     // Convert percentage (0-100) to fan speed (0, 1, 2)
     const fanSpeed = Math.round((value as number) / 50);
 
