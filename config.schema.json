@@ -55,7 +55,7 @@
           },
           "temp_key": {
             "title": "Temp Field Key",
-            "description": "The field denoting target temp in PATCH or POST requests. Either setPoint or targetTemp",
+            "description": "The field denoting target temp in PATCH or POST requests. Either setPoint or tempTarget",
             "type": "string",
             "default": "tempTarget",
             "oneOf": [
