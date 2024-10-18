@@ -22,7 +22,7 @@ export class ExamplePlatformAccessory {
       .getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(
         this.platform.Characteristic.Manufacturer,
-        'Actron Connect',
+        'ActronAir',
       );
 
 
