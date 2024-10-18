@@ -22,7 +22,7 @@ export class ExamplePlatformAccessory {
       .getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(
         this.platform.Characteristic.Manufacturer,
-        'ActronAir',
+        'Actron Connect',
       );
 
 
@@ -42,13 +42,9 @@ export class ExamplePlatformAccessory {
 
     this.fanService
       .getCharacteristic(this.platform.Characteristic.RotationSpeed)
-      .setProps({
-        minStep: 34,    // Step value of 33 (maps to 3 levels: 33, 66, 100)
-        minValue: 33,   // Minimum value is 33
-        maxValue: 100,  // Maximum value is 100
-      })
       .onGet(this.handleFanSpeedGet.bind(this))
       .onSet(this.handleFanSpeedSet.bind(this));
+
 
     // set the service name, this is what is displayed as the default name on the Home app
     // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
@@ -328,8 +324,8 @@ export class ExamplePlatformAccessory {
             b = body;
           }
           this.platform.log.debug('Data recieved from actron GET req ->', b);
-          this.platform.log.debug('Aircon current tempTarget temp ->', b.tempTarget);
-          resolve(b.tempTarget as CharacteristicValue);
+          this.platform.log.debug('Aircon current tempTarget temp ->', b.setPoint);
+          resolve(b.setPoint as CharacteristicValue);
         },
       );
     });
@@ -469,9 +465,10 @@ export class ExamplePlatformAccessory {
           const fanSpeed = data.data.last_data.DA.fanSpeed; // Assuming the API returns fan speed as 0, 1, or 2
           this.platform.log.debug('Fan speed fetched ->', fanSpeed);
 
-          const fanSpeedMap = [33, 67, 100];  // Map 0 -> 33, 1 -> 67, 2 -> 100
+          const fanSpeedMap = [0, 50, 100];  // Map 0 -> 0%, 1 -> 50%, 2 -> 100%
           const fanSpeedLevel = fanSpeedMap[fanSpeed];
           resolve(fanSpeedLevel);
+
         },
       );
     });
@@ -483,12 +480,16 @@ export class ExamplePlatformAccessory {
     const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
 
     let fanSpeed: number;
-    if (value === 33) {
-      fanSpeed = 0;
-    } else if (value === 67) {
-      fanSpeed = 1;
+    if (typeof value === 'number') {
+      if (value <= 33) {
+        fanSpeed = 0; // Map 0-33% to fan speed 0
+      } else if (value <= 67) {
+        fanSpeed = 1; // Map 34-66% to fan speed 1
+      } else {
+        fanSpeed = 2; // Map 67-100% to fan speed 2
+      }
     } else {
-      fanSpeed = 2;
+      fanSpeed = 0;
     }
 
     const requestBody = {

@@ -1,3 +1,6 @@
+# Ignore local testing config
+testing-config.json
+
 # Ignore compiled code
 dist
 

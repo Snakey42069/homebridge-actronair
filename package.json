@@ -1,16 +1,16 @@
 {
   "private": false,
-  "displayName": "Homebridge Actronair",
+  "displayName": "Homebridge Actron Connect",
   "name": "homebridge-actronconnect",
-  "version": "3.0.13-d",
+  "version": "3.0.15",
   "description": "Homebridge plugin for actron air conditioners",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/Snakey42069/homebridge-actronair.git"
+    "url": "git://github.com/manningtelfer/homebridge-actronconnect.git"
   },
   "bugs": {
-    "url": "https://github.com/Snakey42069/homebridge-actronair/issues"
+    "url": "https://github.com/manningtelfer/homebridge-actronconnect/issues"
   },
   "engines": {
     "node": ">=14.18.1",
@@ -41,6 +41,6 @@
     "typescript": "^4.4.4"
   },
   "author": "manningtelfer",
-  "homepage": "https://github.com/Snakey42069/homebridge-actronair#readme",
+  "homepage": "https://github.com/manningtelfer/homebridge-actronconnect#readme",
   "types": "./dist/index.d.ts"
 }

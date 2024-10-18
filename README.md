@@ -1,4 +1,4 @@
-# homebridge-actronair
+# homebridge-actronconnect
 > An unoffical Homebridge community plugin for ActronAir Airconditioners
 
 ## Disclaimers
@@ -17,11 +17,11 @@ This plugin was inspired by [iainelliott's](https://github.com/iainelliott) work
 ## Installation
 **IMPORTANT:** This a plugin for Homebridge. For help getting started with Homebridge, consult their  [setup guides](https://github.com/homebridge/homebridge/wiki).
 
-From your server's web interface, simply navigate to 'Plugins', search for `homebridge-actronair` and click 'INSTALL'.
+From your server's web interface, simply navigate to 'Plugins', search for `homebridge-actronconnect` and click 'INSTALL'.
 
 To install using NPM, run the following in your server's root directory:
 ```
-npm i homebridge-actronair
+npm i homebridge-actronconnect
 ```
 ## Configuration
 To configure the plugin using the server's web interface, navigate to 'Plugins' and click 'SETTINGS'. Add an accessory and complete the required details.
@@ -62,7 +62,7 @@ Use the extracted ```device_token``` and ```user_token``` in the plugin config.
 [] Convert GETs to async update characteristics
 
 ## Issues
-Report issues on [GitHub](https://github.com/Snakey42069/homebridge-actronair/issues).
+Report issues on [GitHub](https://github.com/manningtelfer/homebridge-actronconnect/issues).
 
 
 
