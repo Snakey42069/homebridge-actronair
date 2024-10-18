@@ -349,7 +349,7 @@ export class ExamplePlatformAccessory {
       {
         url: url,
         body: JSON.stringify({
-          DA: { [this.accessory.context.device.tempKey]: value },
+          DA: { [this.accessory.context.device.temp_key]: value },
         }),
         method: "PUT",
         headers: { "Content-Type": "application/json" },
