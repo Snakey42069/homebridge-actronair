@@ -22,7 +22,15 @@
     "$defs": {
       "accessory": {
         "type": "object",
-        "required": ["name", "ip", "mac", "device_token", "user_token", "zones"],
+        "required": [
+          "name",
+          "ip",
+          "mac",
+          "device_token",
+          "user_token",
+          "temp_key",
+          "zones"
+        ],
         "properties": {
           "name": {
             "type": "string",
@@ -44,6 +52,22 @@
           "user_token": {
             "type": "string",
             "description": "Secret user token of the accessory"
+          },
+          "temp_key": {
+            "title": "Temp Field Key",
+            "description": "The field denoting target temp in PATCH or POST requests. Either setPoint or targetTemp",
+            "type": "string",
+            "default": "targetTemp",
+            "oneOf": [
+              {
+                "title": "targetTemp",
+                "enum": "targetTemp"
+              },
+              {
+                "title": "setPoint",
+                "enum": "setPoint"
+              }
+            ]
           },
           "zones": {
             "type": "array",
