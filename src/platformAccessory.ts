@@ -1,7 +1,7 @@
-import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
+import { Service, PlatformAccessory, CharacteristicValue } from "homebridge";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const request = require('request');
-import { ExampleHomebridgePlatform } from './platform';
+const request = require("request");
+import { ExampleHomebridgePlatform } from "./platform";
 
 /**
  * Platform Accessory
@@ -16,15 +16,14 @@ export class ExamplePlatformAccessory {
 
   constructor(
     private readonly platform: ExampleHomebridgePlatform,
-    private readonly accessory: PlatformAccessory,
+    private readonly accessory: PlatformAccessory
   ) {
     this.accessory
       .getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(
         this.platform.Characteristic.Manufacturer,
-        'ActronAir',
+        "ActronAir"
       );
-
 
     this.service =
       this.accessory.getService(this.platform.Service.Thermostat) ||
@@ -37,7 +36,7 @@ export class ExamplePlatformAccessory {
 
     this.fanService.setCharacteristic(
       this.platform.Characteristic.Name,
-      `${accessory.context.device.name} Fan`,
+      `${accessory.context.device.name} Fan`
     );
 
     this.fanService
@@ -45,47 +44,55 @@ export class ExamplePlatformAccessory {
       .onGet(this.handleFanSpeedGet.bind(this))
       .onSet(this.handleFanSpeedSet.bind(this));
 
-
     // set the service name, this is what is displayed as the default name on the Home app
     // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
     this.service.setCharacteristic(
       this.platform.Characteristic.Name,
-      accessory.context.device.name,
+      accessory.context.device.name
     );
 
     this.service.setCharacteristic(
       this.platform.Characteristic.TemperatureDisplayUnits,
-      this.platform.Characteristic.TemperatureDisplayUnits.CELSIUS,
+      this.platform.Characteristic.TemperatureDisplayUnits.CELSIUS
     );
 
     const zConfig: Record<string, string>[] =
       this.accessory.context.device.zones;
-    this.platform.log.debug('Actoren SETUP zconfig ->', zConfig, this.accessory.context.device.zones);
+    this.platform.log.debug(
+      "Actoren SETUP zconfig ->",
+      zConfig,
+      this.accessory.context.device.zones
+    );
     if (zConfig && Array.isArray(zConfig) && zConfig.length > 0) {
       for (const z of zConfig) {
-        this.platform.log.debug('Actoren SETUP Z now ->', z);
+        this.platform.log.debug("Actoren SETUP Z now ->", z);
         this.zones[String(z.index)] =
           this.accessory.getService(z.name) ||
           this.accessory.addService(
             this.platform.Service.Switch,
             z.name,
-            `zone-${z.index}`,
+            `zone-${z.index}`
           );
         this.zones[String(z.index)].setCharacteristic(
           this.platform.Characteristic.Name,
-          z.name,
+          z.name
         );
         this.zones[String(z.index)]
           .getCharacteristic(this.platform.Characteristic.On)
           .onGet(this.handleZoneOnGet.bind(this, z.index))
           .onSet(this.handleZoneOnSet.bind(this, z.index));
-        this.platform.log.debug('Actoren SETUP REGISTERED ->', z, z.index, this.zones[String(z.index)]);
+        this.platform.log.debug(
+          "Actoren SETUP REGISTERED ->",
+          z,
+          z.index,
+          this.zones[String(z.index)]
+        );
       }
     }
 
     this.service
       .getCharacteristic(
-        this.platform.Characteristic.CurrentHeatingCoolingState,
+        this.platform.Characteristic.CurrentHeatingCoolingState
       )
       .onGet(this.handleCurrentHeatingCoolingStateGet.bind(this));
 
@@ -111,48 +118,48 @@ export class ExamplePlatformAccessory {
       request(
         {
           url: url,
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
           timeout: 5000,
         },
         (error, response, body) => {
           if (error) {
-            this.platform.log.debug('Actron Error in GET->', error);
+            this.platform.log.debug("Actron Error in GET->", error);
             reject(
               new this.platform.api.hap.HapStatusError(
-                this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
-              ),
+                this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE
+              )
             );
           }
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let b: Record<any, any>;
-          if (typeof body === 'string') {
+          if (typeof body === "string") {
             b = JSON.parse(body);
           } else {
             b = body;
           }
           const m = b.data.last_data.DA.mode;
           this.platform.log.debug(
-            'Data recieved from actron currentHeaterCool GET req ->',
-            b,
+            "Data recieved from actron currentHeaterCool GET req ->",
+            b
           );
           if (!b.data.last_data.DA.amOn) {
-            this.platform.log.debug('Aircon HC state ->', 'OFF');
+            this.platform.log.debug("Aircon HC state ->", "OFF");
             resolve(
-              this.platform.Characteristic.CurrentHeatingCoolingState.OFF,
+              this.platform.Characteristic.CurrentHeatingCoolingState.OFF
             );
           } else if (m === 0 || m === 2 || m === 3) {
-            this.platform.log.debug('Aircon HC state ->', 'COOL');
+            this.platform.log.debug("Aircon HC state ->", "COOL");
             resolve(
-              this.platform.Characteristic.CurrentHeatingCoolingState.COOL,
+              this.platform.Characteristic.CurrentHeatingCoolingState.COOL
             );
           } else {
-            this.platform.log.debug('Aircon HC state ->', 'HEAT');
+            this.platform.log.debug("Aircon HC state ->", "HEAT");
             resolve(
-              this.platform.Characteristic.CurrentHeatingCoolingState.HEAT,
+              this.platform.Characteristic.CurrentHeatingCoolingState.HEAT
             );
           }
-        },
+        }
       );
     });
   }
@@ -164,55 +171,55 @@ export class ExamplePlatformAccessory {
       request(
         {
           url: url,
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
           timeout: 5000,
         },
         (error, response, body) => {
           if (error) {
-            this.platform.log.debug('Actron Error in GET->', error);
+            this.platform.log.debug("Actron Error in GET->", error);
             reject(
               new this.platform.api.hap.HapStatusError(
-                this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
-              ),
+                this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE
+              )
             );
           }
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let b: Record<any, any>;
-          if (typeof body === 'string') {
+          if (typeof body === "string") {
             b = JSON.parse(body);
           } else {
             b = body;
           }
           const m = b.data.last_data.DA.mode;
           this.platform.log.debug(
-            'Data recieved from actron currentHeaterCool GET req ->',
-            b,
+            "Data recieved from actron currentHeaterCool GET req ->",
+            b
           );
           this.platform.log.debug(
-            'Get TargetHeatingCoolingState Characteristic ->',
-            m,
+            "Get TargetHeatingCoolingState Characteristic ->",
+            m
           );
           if (!b.data.last_data.DA.amOn) {
-            this.platform.log.debug('Aircon target state ->', 'OFF');
+            this.platform.log.debug("Aircon target state ->", "OFF");
             resolve(this.platform.Characteristic.TargetHeatingCoolingState.OFF);
           } else if (m === 0) {
-            this.platform.log.debug('Aircon target state ->', 'AUTO');
+            this.platform.log.debug("Aircon target state ->", "AUTO");
             resolve(
-              this.platform.Characteristic.TargetHeatingCoolingState.AUTO,
+              this.platform.Characteristic.TargetHeatingCoolingState.AUTO
             );
           } else if (m === 1) {
-            this.platform.log.debug('Aircon target state ->', 'HEAT');
+            this.platform.log.debug("Aircon target state ->", "HEAT");
             resolve(
-              this.platform.Characteristic.TargetHeatingCoolingState.HEAT,
+              this.platform.Characteristic.TargetHeatingCoolingState.HEAT
             );
           } else if (m === 2 || m === 3) {
-            this.platform.log.debug('Aircon target state ->', 'COOL/FAN');
+            this.platform.log.debug("Aircon target state ->", "COOL/FAN");
             resolve(
-              this.platform.Characteristic.TargetHeatingCoolingState.COOL,
+              this.platform.Characteristic.TargetHeatingCoolingState.COOL
             );
           }
-        },
+        }
       );
     });
   }
@@ -220,7 +227,7 @@ export class ExamplePlatformAccessory {
   handleTargetHeatingCoolingStateSet(value) {
     // eslint-disable-next-line max-len
     const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
-    this.platform.log.debug('ActronURL ->', url);
+    this.platform.log.debug("ActronURL ->", url);
     let d = value;
     if (value === this.platform.Characteristic.TargetHeatingCoolingState.OFF) {
       d = { DA: { amOn: false } };
@@ -239,25 +246,25 @@ export class ExamplePlatformAccessory {
       {
         url: url,
         body: JSON.stringify(d),
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         timeout: 5000,
         qs: { user_access_token: this.accessory.context.device.user_token },
       },
       (error, response, body) => {
         if (error) {
-          this.platform.log.debug('Actron Error in SET->', error);
+          this.platform.log.debug("Actron Error in SET->", error);
           throw new this.platform.api.hap.HapStatusError(
-            this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
+            this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE
           );
         } else {
           this.platform.log.debug(
-            'Data recieved from actron POST req ->',
-            body,
+            "Data recieved from actron POST req ->",
+            body
           );
-          this.platform.log.debug('Aircon target state set to ->', value);
+          this.platform.log.debug("Aircon target state set to ->", value);
         }
-      },
+      }
     );
   }
 
@@ -268,30 +275,30 @@ export class ExamplePlatformAccessory {
       request(
         {
           url: url,
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
           timeout: 5000,
         },
         (error, response, body) => {
           if (error) {
-            this.platform.log.debug('Actron Error in GET->', error);
+            this.platform.log.debug("Actron Error in GET->", error);
             reject(
               new this.platform.api.hap.HapStatusError(
-                this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
-              ),
+                this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE
+              )
             );
           }
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let b: Record<any, any>;
-          if (typeof body === 'string') {
+          if (typeof body === "string") {
             b = JSON.parse(body);
           } else {
             b = body;
           }
-          this.platform.log.debug('Data recieved from actron GET req ->', b);
-          this.platform.log.debug('Aircon current temp ->', b.roomTemp_oC);
+          this.platform.log.debug("Data recieved from actron GET req ->", b);
+          this.platform.log.debug("Aircon current temp ->", b.roomTemp_oC);
           resolve(b.roomTemp_oC as CharacteristicValue);
-        },
+        }
       );
     });
   }
@@ -303,30 +310,33 @@ export class ExamplePlatformAccessory {
       request(
         {
           url: url,
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
           timeout: 5000,
         },
         (error, response, body) => {
           if (error) {
-            this.platform.log.debug('Actron Error in GET->', error);
+            this.platform.log.debug("Actron Error in GET->", error);
             reject(
               new this.platform.api.hap.HapStatusError(
-                this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
-              ),
+                this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE
+              )
             );
           }
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let b: Record<any, any>;
-          if (typeof body === 'string') {
+          if (typeof body === "string") {
             b = JSON.parse(body);
           } else {
             b = body;
           }
-          this.platform.log.debug('Data recieved from actron GET req ->', b);
-          this.platform.log.debug('Aircon current tempTarget temp ->', b.setPoint);
+          this.platform.log.debug("Data recieved from actron GET req ->", b);
+          this.platform.log.debug(
+            "Aircon current tempTarget temp ->",
+            b.setPoint
+          );
           resolve(b.setPoint as CharacteristicValue);
-        },
+        }
       );
     });
   }
@@ -334,57 +344,59 @@ export class ExamplePlatformAccessory {
   handleTargetTemperatureSet(value) {
     // eslint-disable-next-line max-len
     const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
-    this.platform.log.debug('ActronURL ->', url);
+    this.platform.log.debug("ActronURL ->", url);
     request(
       {
         url: url,
-        body: JSON.stringify({ DA: { tempTarget: value } }),
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          DA: { [this.accessory.context.device.tempKey]: value },
+        }),
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         timeout: 5000,
         qs: { user_access_token: this.accessory.context.device.user_token },
       },
       (error, response, body) => {
         if (error) {
-          this.platform.log.debug('Actron Error in SET->', error);
+          this.platform.log.debug("Actron Error in SET->", error);
           throw new this.platform.api.hap.HapStatusError(
-            this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
+            this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE
           );
         } else {
           this.platform.log.debug(
-            'Data recieved from actron POST req ->',
-            body,
+            "Data recieved from actron POST req ->",
+            body
           );
-          this.platform.log.debug('Aircon tempTarget set to ->', value);
+          this.platform.log.debug("Aircon tempTarget set to ->", value);
         }
-      },
+      }
     );
   }
 
   async handleZoneOnGet(index) {
     return new Promise<CharacteristicValue>((resolve, reject) => {
       // eslint-disable-next-line max-len
-      this.platform.log.debug('Actron INDEX PLZ WORK ->', index);
+      this.platform.log.debug("Actron INDEX PLZ WORK ->", index);
       const url = `http://${this.accessory.context.device.ip}/6.json`;
       request(
         {
           url: url,
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
           timeout: 5000,
         },
         (error, response, body) => {
           if (error) {
-            this.platform.log.debug('Actron Error in GET->', error);
+            this.platform.log.debug("Actron Error in GET->", error);
             reject(
               new this.platform.api.hap.HapStatusError(
-                this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
-              ),
+                this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE
+              )
             );
           }
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let b: Record<any, any>;
-          if (typeof body === 'string') {
+          if (typeof body === "string") {
             b = JSON.parse(body);
           } else {
             b = body;
@@ -392,7 +404,7 @@ export class ExamplePlatformAccessory {
           const zs = b.enabledZones;
           this.zonesDump = b.enabledZones;
           resolve(zs[index]);
-        },
+        }
       );
     });
   }
@@ -404,35 +416,34 @@ export class ExamplePlatformAccessory {
 
     // eslint-disable-next-line max-len
     const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
-    this.platform.log.debug('Actoren ARGAS value ->', value, 'idnex ->', index);
+    this.platform.log.debug("Actoren ARGAS value ->", value, "idnex ->", index);
     const a = this.zonesDump as number[];
     a[index] = value;
-    this.platform.log.debug('Actoren ZONES ->', a);
+    this.platform.log.debug("Actoren ZONES ->", a);
     request(
       {
         url: url,
         body: JSON.stringify({ DA: { enabledZones: a } }),
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         timeout: 5000,
         qs: { user_access_token: this.accessory.context.device.user_token },
       },
       (error, response, body) => {
         if (error) {
-          this.platform.log.debug('Actron Error in SET->', error);
+          this.platform.log.debug("Actron Error in SET->", error);
           throw new this.platform.api.hap.HapStatusError(
-            this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
+            this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE
           );
         } else {
           this.platform.log.debug(
-            'Data recieved from actron POST req ->',
-            body,
+            "Data recieved from actron POST req ->",
+            body
           );
-          this.platform.log.debug('Aircon zones SET ->', index, value);
+          this.platform.log.debug("Aircon zones SET ->", index, value);
         }
-      },
+      }
     );
-
   }
 
   // Get fan speed from the API
@@ -443,33 +454,32 @@ export class ExamplePlatformAccessory {
       request(
         {
           url: url,
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
           timeout: 5000,
         },
         (error, response, body) => {
           if (error) {
-            this.platform.log.debug('Actron Error in GET Fan Speed->', error);
+            this.platform.log.debug("Actron Error in GET Fan Speed->", error);
             reject(
               new this.platform.api.hap.HapStatusError(
-                this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
-              ),
+                this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE
+              )
             );
           }
           let data;
-          if (typeof body === 'string') {
+          if (typeof body === "string") {
             data = JSON.parse(body);
           } else {
             data = body;
           }
           const fanSpeed = data.data.last_data.DA.fanSpeed; // Assuming the API returns fan speed as 0, 1, or 2
-          this.platform.log.debug('Fan speed fetched ->', fanSpeed);
+          this.platform.log.debug("Fan speed fetched ->", fanSpeed);
 
-          const fanSpeedMap = [0, 50, 100];  // Map 0 -> 0%, 1 -> 50%, 2 -> 100%
+          const fanSpeedMap = [0, 50, 100]; // Map 0 -> 0%, 1 -> 50%, 2 -> 100%
           const fanSpeedLevel = fanSpeedMap[fanSpeed];
           resolve(fanSpeedLevel);
-
-        },
+        }
       );
     });
   }
@@ -480,7 +490,7 @@ export class ExamplePlatformAccessory {
     const url = `https://que.actronair.com.au/rest/v0/device/${this.accessory.context.device.device_token}?user_access_token=${this.accessory.context.device.user_token}`;
 
     let fanSpeed: number;
-    if (typeof value === 'number') {
+    if (typeof value === "number") {
       if (value <= 33) {
         fanSpeed = 0; // Map 0-33% to fan speed 0
       } else if (value <= 67) {
@@ -498,31 +508,31 @@ export class ExamplePlatformAccessory {
       },
     };
 
-    this.platform.log.debug('Setting fan speed to ->', fanSpeed);
+    this.platform.log.debug("Setting fan speed to ->", fanSpeed);
 
     request(
       {
         url: url,
         body: JSON.stringify(requestBody),
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         timeout: 5000,
         qs: { user_access_token: this.accessory.context.device.user_token },
       },
       (error, response, body) => {
         if (error) {
-          this.platform.log.debug('Actron Error in SET Fan Speed->', error);
+          this.platform.log.debug("Actron Error in SET Fan Speed->", error);
           throw new this.platform.api.hap.HapStatusError(
-            this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE,
+            this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE
           );
         } else {
           this.platform.log.debug(
-            'Data recieved from actron POST req ->',
-            body,
+            "Data recieved from actron POST req ->",
+            body
           );
-          this.platform.log.debug('Fan speed set to ->', fanSpeed);
+          this.platform.log.debug("Fan speed set to ->", fanSpeed);
         }
-      },
+      }
     );
   }
 }

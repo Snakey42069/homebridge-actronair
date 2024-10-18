@@ -57,11 +57,11 @@
             "title": "Temp Field Key",
             "description": "The field denoting target temp in PATCH or POST requests. Either setPoint or targetTemp",
             "type": "string",
-            "default": "targetTemp",
+            "default": "tempTarget",
             "oneOf": [
               {
-                "title": "targetTemp",
-                "enum": "targetTemp"
+                "title": "tempTarget",
+                "enum": "tempTarget"
               },
               {
                 "title": "setPoint",
