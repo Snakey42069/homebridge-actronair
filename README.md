@@ -65,4 +65,3 @@ Use the extracted ```device_token``` and ```user_token``` in the plugin config.
 Report issues on [GitHub](https://github.com/Snakey42069/homebridge-actronair/issues).
 
 
-

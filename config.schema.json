@@ -8,71 +8,62 @@
       "name": {
         "title": "Name",
         "type": "string",
-        "required": true,
-        "default": "Actron"
+        "default": "Homebridge Actronair"
       },
       "accessories": {
         "type": "array",
         "title": "Accessories",
-        "required": true,
         "default": [],
-        "items": { "$ref": "#/$defs/accessory" }
+        "items": {
+          "$ref": "#/$defs/accessory"
+        }
       }
     },
     "$defs": {
       "accessory": {
         "type": "object",
+        "required": ["name", "ip", "mac", "device_token", "user_token", "zones"],
         "properties": {
           "name": {
             "type": "string",
             "description": "Name of the accessory",
-            "name": "Name",
-            "default": "Accessory",
-            "required": true
+            "default": "Air Conditioning"
           },
           "ip": {
             "type": "string",
-            "description": "IP address of the accessory (local network only)",
-            "name": "IP Address",
-            "required": true
+            "description": "IP address of the accessory (local network only)"
           },
           "mac": {
             "type": "string",
-            "description": "MAC address of the accessory (local network only)",
-            "name": "MAC Address",
-            "required": true
+            "description": "MAC address of the accessory (local network only)"
           },
           "device_token": {
             "type": "string",
-            "description": "Device token of the accessory",
-            "name": "Device Token",
-            "required": true
+            "description": "Device token of the accessory"
           },
           "user_token": {
             "type": "string",
-            "description": "Secret user token of the accessory",
-            "name": "User Token",
-            "required": true
+            "description": "Secret user token of the accessory"
           },
           "zones": {
             "type": "array",
             "title": "Zones",
-            "required": true,
             "default": [],
-            "items": { "$ref": "#/$defs/zone" }
+            "items": {
+              "$ref": "#/$defs/zone"
+            }
           }
         }
       },
       "zone": {
         "type": "object",
+        "required": ["name", "index"],
         "properties": {
           "name": {
-            "type": "string",
-            "required": true
+            "type": "string"
           },
           "index": {
-            "type": "number",
-            "required": true
+            "type": "number"
           }
         }
       }
