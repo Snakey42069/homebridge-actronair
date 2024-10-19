@@ -61,11 +61,11 @@
             "oneOf": [
               {
                 "title": "tempTarget",
-                "enum": "tempTarget"
+                "enum": ["tempTarget"]
               },
               {
                 "title": "setPoint",
-                "enum": "setPoint"
+                "enum": ["setPoint"]
               }
             ]
           },
